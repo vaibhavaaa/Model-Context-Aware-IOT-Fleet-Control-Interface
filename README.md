@@ -2,7 +2,14 @@
 
 A lightweight IoT device management dashboard for a serverless AWS backend. Monitor live telemetry across a mixed fleet of devices, inspect history and trends, control device state via device shadows, and query or command devices using natural language.
 
-![status](placeholder\screenshots\Screenshot 2026-07-06 175007.png)
+### Device overview
+![Overview](screenshots/dashboard-overview.png)
+
+### Shadow control
+![Shadow control](screenshots/shadow-control.png)
+
+### AI console
+![AI console](screenshots/ai-console.png)
 
 ## What it does
 
