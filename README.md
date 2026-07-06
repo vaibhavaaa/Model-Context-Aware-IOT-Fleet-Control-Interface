@@ -9,7 +9,7 @@ A lightweight IoT device management dashboard for a serverless AWS backend. Moni
 ![Shadow control](placeholder/screenshots/shadow-control.png)
 
 ### AI console
-![AI console](placeholder/screenshots/ai-console.png)
+!https://github.com/vaibhavaaa/Model-Context-Aware-IOT-Fleet-Control-Interface/blob/2a81e110a7c228148d80bd93fa2ee253857bec64/placeholder/screenshots/Screenshot%202026-07-06%20175007.png
 
 ## What it does
 
