@@ -2,6 +2,8 @@
 
 A lightweight IoT device management dashboard for a serverless AWS backend. Monitor live telemetry across a mixed fleet of devices, inspect history and trends, control device state via device shadows, and query or command devices using natural language.
 
+#Dashboard
+![Dashboard](placeholder/screenshots/Screenshot%202026-07-06%20175007.png)
 
 ## What it does
 
@@ -81,8 +83,9 @@ The Lambda functions and API Gateway configuration live in `/backend`. This repo
 
 ## Screenshots
 
-_(add screenshots of the dashboard here — see "Adding screenshots" below)_
-![Dashboard](placeholder/screenshots/Screenshot%202026-07-06%20175007.png)
+
+![Query and Control](placeholder/screenshots/Screenshot%202026-07-06%20175603.png)
+![Views](placeholder/screenshots/Screenshot%202026-07-06%20175721.png)
 
 ## License
 
