@@ -82,6 +82,7 @@ The Lambda functions and API Gateway configuration live in `/backend`. This repo
 ## Screenshots
 
 _(add screenshots of the dashboard here — see "Adding screenshots" below)_
+![Dashboard](placeholder/screenshots/Screenshot%202026-07-06%20175007.png)
 
 ## License
 
