@@ -1,0 +1,1614 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fleet Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-base: #0a0d0b;
+        --bg-panel: #121712;
+        --bg-elevated: #1a211b;
+        --bg-hover: #212a22;
+        --border: #232b25;
+        --border-bright: #38453a;
+        --text-primary: #e7eee8;
+        --text-muted: #8c9a90;
+        --text-dim: #4d5850;
+        --amber: #ffb020;
+        --amber-dim: #5a4520;
+        --amber-glow: rgba(255, 176, 32, 0.15);
+        --green: #3ecf8e;
+        --green-dim: rgba(62, 207, 142, 0.14);
+        --red: #ff5c5c;
+        --red-dim: rgba(255, 92, 92, 0.14);
+        --font-display: "Space Grotesk", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", "SF Mono", monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: var(--bg-base);
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+        font-size: 13px;
+      }
+      body {
+        background-image:
+          radial-gradient(
+            circle at 15% 0%,
+            rgba(255, 176, 32, 0.05),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 85% 100%,
+            rgba(62, 207, 142, 0.04),
+            transparent 40%
+          );
+      }
+      ::selection {
+        background: var(--amber);
+        color: #0a0d0b;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-base);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border-bright);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-dim);
+      }
+
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      input,
+      textarea {
+        font-family: inherit;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* ---------- TOP BAR ---------- */
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 12px 20px;
+        background: var(--bg-panel);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-family: var(--font-display);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+      }
+      .brand .mark {
+        color: var(--amber);
+        font-size: 18px;
+      }
+      .brand .name {
+        font-size: 16px;
+      }
+      .brand .sub {
+        font-size: 10px;
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-weight: 400;
+        letter-spacing: 0.08em;
+      }
+
+      .conn-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 280px;
+      }
+      .conn-form input {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 7px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+      .conn-form input:focus {
+        border-color: var(--amber-dim);
+      }
+      .conn-form input#baseUrl {
+        flex: 1.6;
+        min-width: 160px;
+      }
+      .conn-form input#token {
+        flex: 1;
+        min-width: 120px;
+      }
+      .btn {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-bright);
+        color: var(--text-primary);
+        padding: 7px 14px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--amber-dim);
+      }
+      .btn.primary {
+        background: var(--amber);
+        border-color: var(--amber);
+        color: #0a0d0b;
+        font-weight: 600;
+      }
+      .btn.primary:hover {
+        background: #ffc255;
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--text-muted);
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-dim);
+        flex-shrink: 0;
+      }
+      .dot.on {
+        background: var(--green);
+        box-shadow: 0 0 6px var(--green);
+        animation: pulse 2s infinite;
+      }
+      .dot.off {
+        background: var(--red);
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.45;
+        }
+      }
+
+      /* ---------- MAIN LAYOUT ---------- */
+      .main {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+        background: var(--bg-panel);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .sidebar-head {
+        padding: 14px 16px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .sidebar-head .label {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+      }
+      .sidebar-head .count {
+        font-family: var(--font-display);
+        font-weight: 700;
+        color: var(--amber);
+        font-size: 14px;
+      }
+      .search-box {
+        padding: 0 16px 10px;
+      }
+      .search-box input {
+        width: 100%;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 7px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+      .search-box input:focus {
+        border-color: var(--amber-dim);
+      }
+      .device-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 8px 12px;
+      }
+      .category {
+        margin-top: 10px;
+      }
+      .category-title {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        padding: 6px 8px 4px;
+      }
+      .device-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        margin-bottom: 2px;
+      }
+      .device-card:hover {
+        background: var(--bg-hover);
+      }
+      .device-card.active {
+        background: var(--amber-glow);
+        border-color: var(--amber-dim);
+      }
+      .device-card .icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-elevated);
+        color: var(--text-muted);
+      }
+      .device-card.active .icon {
+        color: var(--amber);
+      }
+      .device-card .meta {
+        min-width: 0;
+        flex: 1;
+      }
+      .device-card .id {
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .device-card .status-line {
+        font-size: 10px;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+      }
+      .empty-state {
+        padding: 30px 16px;
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      /* CONTENT */
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow-y: auto;
+      }
+      .content-inner {
+        padding: 22px 28px;
+        max-width: 900px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--text-dim);
+        text-align: center;
+      }
+      .placeholder .big {
+        font-family: var(--font-display);
+        font-size: 22px;
+        color: var(--text-muted);
+      }
+
+      .device-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .device-title {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .device-title .cat {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 400;
+        display: block;
+        margin-bottom: 4px;
+      }
+      .header-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 1px solid var(--border);
+      }
+      .status-badge.up {
+        color: var(--green);
+        border-color: rgba(62, 207, 142, 0.3);
+        background: var(--green-dim);
+      }
+      .status-badge.down {
+        color: var(--red);
+        border-color: rgba(255, 92, 92, 0.3);
+        background: var(--red-dim);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 18px;
+      }
+      .tab {
+        padding: 9px 4px;
+        margin-right: 18px;
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        border-bottom: 2px solid transparent;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+      }
+      .tab:hover {
+        color: var(--text-muted);
+      }
+      .tab.active {
+        color: var(--amber);
+        border-color: var(--amber);
+      }
+
+      .grid-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      .metric-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+      }
+      .metric-card .k {
+        font-size: 10px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+      }
+      .metric-card .v {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .metric-card .v.amber {
+        color: var(--amber);
+      }
+
+      .section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        margin: 24px 0 10px;
+      }
+
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      table.data-table th {
+        text-align: left;
+        padding: 8px 10px;
+        color: var(--text-dim);
+        font-weight: 500;
+        border-bottom: 1px solid var(--border);
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+      }
+      table.data-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      table.data-table tr:hover td {
+        background: var(--bg-panel);
+        color: var(--text-primary);
+      }
+
+      .sparkline-wrap {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+      .sparkline-wrap .k {
+        font-size: 10px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+
+      .shadow-box {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .shadow-box pre {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-muted);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .quick-controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .shadow-editor textarea {
+        width: 100%;
+        min-height: 110px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 12px;
+        resize: vertical;
+        outline: none;
+      }
+      .shadow-editor textarea:focus {
+        border-color: var(--amber-dim);
+      }
+      .shadow-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+      }
+      .inline-msg {
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+      .inline-msg.ok {
+        color: var(--green);
+      }
+      .inline-msg.err {
+        color: var(--red);
+      }
+
+      .banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        margin-bottom: 14px;
+      }
+      .banner.err {
+        background: var(--red-dim);
+        color: var(--red);
+        border: 1px solid rgba(255, 92, 92, 0.3);
+      }
+      .banner.info {
+        background: var(--amber-glow);
+        color: var(--amber);
+        border: 1px solid var(--amber-dim);
+      }
+
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid var(--border-bright);
+        border-top-color: var(--amber);
+        animation: spin 0.7s linear infinite;
+        display: inline-block;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ---------- CONSOLE ---------- */
+      .console {
+        flex-shrink: 0;
+        border-top: 1px solid var(--border);
+        background: #080b09;
+        display: flex;
+        flex-direction: column;
+        height: 230px;
+        transition: height 0.18s ease;
+      }
+      .console.collapsed {
+        height: 42px;
+      }
+      .console-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .console-head .left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .console-head .title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+      }
+      .mode-toggle {
+        display: flex;
+        border: 1px solid var(--border-bright);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+      .mode-toggle button {
+        background: var(--bg-elevated);
+        border: none;
+        color: var(--text-dim);
+        padding: 4px 12px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+      }
+      .mode-toggle button.active.query {
+        background: var(--amber-dim);
+        color: var(--amber);
+      }
+      .mode-toggle button.active.control {
+        background: rgba(62, 207, 142, 0.15);
+        color: var(--green);
+      }
+      .collapse-btn {
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-size: 14px;
+        padding: 2px 6px;
+      }
+      .collapse-btn:hover {
+        color: var(--text-primary);
+      }
+
+      .console-log {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 16px;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+      .log-entry {
+        margin-bottom: 10px;
+      }
+      .log-entry .prompt-line {
+        color: var(--text-muted);
+      }
+      .log-entry .prompt-line .arrow {
+        color: var(--amber);
+        margin-right: 6px;
+      }
+      .log-entry .reply-line {
+        color: var(--text-primary);
+        padding-left: 16px;
+      }
+      .log-entry .reply-line.err {
+        color: var(--red);
+      }
+      .log-entry .reply-line .arrow {
+        color: var(--green);
+        margin-right: 6px;
+      }
+      .log-empty {
+        color: var(--text-dim);
+      }
+
+      .console-input-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .console-input-row .caret {
+        color: var(--amber);
+        font-weight: 700;
+      }
+      .console-input-row input {
+        flex: 1;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        outline: none;
+        font-size: 13px;
+      }
+      .console-input-row input::placeholder {
+        color: var(--text-dim);
+      }
+
+      .icon-svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      @media (max-width: 760px) {
+        .sidebar {
+          width: 220px;
+        }
+        .content-inner {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- TOP BAR -->
+      <div class="topbar">
+        <div class="brand">
+          <span class="mark">&#9679;</span>
+          <span class="name">FLEET CONSOLE</span>
+          <span class="sub">DEVICE OPS</span>
+        </div>
+        <div class="conn-form">
+          <input
+            id="baseUrl"
+            type="text"
+            placeholder="API base URL, e.g. https://xxxx.execute-api.ap-south-1.amazonaws.com/devices"
+          />
+          <input id="token" type="password" placeholder="Authorization token" />
+          <button class="btn primary" id="connectBtn">Connect</button>
+        </div>
+        <div class="status-pill" id="connStatus">
+          <span class="dot off"></span><span>Not connected</span>
+        </div>
+      </div>
+
+      <div class="main">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+          <div class="sidebar-head">
+            <span class="label">Devices</span>
+            <span class="count" id="deviceCount">0</span>
+          </div>
+          <div class="search-box">
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Filter devices..."
+            />
+          </div>
+          <div class="device-list" id="deviceList">
+            <div class="empty-state">
+              Enter your API base URL and token above, then hit Connect to load
+              the fleet.
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+          <div class="content-inner" id="contentInner">
+            <div class="placeholder">
+              <div class="big">No device selected</div>
+              <div>
+                Pick a device from the list, or connect first if the list is
+                empty.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI CONSOLE -->
+      <div class="console" id="console">
+        <div class="console-head">
+          <div class="left">
+            <span class="title">AI Console</span>
+            <div class="mode-toggle">
+              <button class="active query" data-mode="query" id="modeQueryBtn">
+                Query
+              </button>
+              <button data-mode="control" id="modeControlBtn">Control</button>
+            </div>
+          </div>
+          <button class="collapse-btn" id="collapseBtn" title="Collapse/expand">
+            &#9662;
+          </button>
+        </div>
+        <div class="console-log" id="consoleLog">
+          <div class="log-empty">
+            Ask about a device ("show me latest data from esp32_01") or command
+            one ("turn on smart_light_bedroom"). Switch mode above to match your
+            intent.
+          </div>
+        </div>
+        <div class="console-input-row">
+          <span class="caret">&gt;</span>
+          <input
+            id="consoleInput"
+            type="text"
+            placeholder="Type a command and hit Enter..."
+          />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        /* ---------------- storage helper (falls back to memory if blocked) ---------------- */
+        const memStore = {};
+        const storage = {
+          get(k) {
+            try {
+              return localStorage.getItem(k);
+            } catch (e) {
+              return memStore[k] ?? null;
+            }
+          },
+          set(k, v) {
+            try {
+              localStorage.setItem(k, v);
+            } catch (e) {
+              memStore[k] = v;
+            }
+          },
+        };
+
+        /* ---------------- state ---------------- */
+        let state = {
+          baseUrl: storage.get("fc_baseUrl") || "",
+          token: storage.get("fc_token") || "",
+          connected: false,
+          devices: [],
+          selectedId: null,
+          tab: "overview",
+          latest: null,
+          recent: null,
+          shadow: null,
+          aiMode: "query",
+          consoleCollapsed: false,
+        };
+
+        const $ = (sel) => document.querySelector(sel);
+        const el = (tag, cls, html) => {
+          const e = document.createElement(tag);
+          if (cls) e.className = cls;
+          if (html !== undefined) e.innerHTML = html;
+          return e;
+        };
+
+        $("#baseUrl").value = state.baseUrl;
+        $("#token").value = state.token;
+
+        /* ---------------- icons ---------------- */
+        const ICONS = {
+          light:
+            '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.5.5.8 1 .8 1.7V16h6.4v-.8c0-.7.3-1.2.8-1.7A6 6 0 0012 3z"/></svg>',
+          thermostat:
+            '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 14.76V5a2 2 0 00-4 0v9.76a4 4 0 104 0z"/></svg>',
+          lock: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
+          camera:
+            '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 7l-6 4 6 4V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+          car: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17h14M5 17a2 2 0 100-4M19 17a2 2 0 100-4M5 13l1.5-5h11L19 13"/></svg>',
+          sun: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>',
+          leaf: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 20A7 7 0 019 6c3 0 8 1 11-4 1 6-1 18-9 18z"/></svg>',
+          fridge:
+            '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="1.5"/><path d="M5 9h14M9 5.5v2M9 12.5v2"/></svg>',
+          droplet:
+            '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2s6 7 6 11a6 6 0 11-12 0c0-4 6-11 6-11z"/></svg>',
+          wind: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h11a2.5 2.5 0 100-5M3 16h14a2.5 2.5 0 110 5M3 12h9a2.5 2.5 0 100-5"/></svg>',
+          factory:
+            '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21V10l6 4v-4l6 4V6l6 4v11H3z"/></svg>',
+          zap: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+          chip: '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>',
+        };
+
+        function iconFor(id) {
+          const s = id.toLowerCase();
+          if (s.includes("light")) return ICONS.light;
+          if (s.includes("thermostat")) return ICONS.thermostat;
+          if (s.includes("lock")) return ICONS.lock;
+          if (s.includes("camera") || s.includes("cctv")) return ICONS.camera;
+          if (s.includes("parking")) return ICONS.car;
+          if (s.includes("solar")) return ICONS.sun;
+          if (s.includes("greenhouse") || s.includes("irrigation"))
+            return ICONS.leaf;
+          if (s.includes("fridge")) return ICONS.fridge;
+          if (s.includes("leak") || s.includes("water")) return ICONS.droplet;
+          if (s.includes("air_quality")) return ICONS.wind;
+          if (s.includes("conveyor")) return ICONS.factory;
+          if (s.includes("energy")) return ICONS.zap;
+          return ICONS.chip;
+        }
+
+        function categoryFor(id) {
+          const s = id.toLowerCase();
+          if (
+            [
+              "light",
+              "thermostat",
+              "lock",
+              "fridge",
+              "bathroom",
+              "air_quality",
+              "leak",
+            ].some((k) => s.includes(k))
+          )
+            return "Home";
+          if (["conveyor", "energy_meter"].some((k) => s.includes(k)))
+            return "Industrial";
+          if (
+            ["solar", "parking", "irrigation", "greenhouse"].some((k) =>
+              s.includes(k),
+            )
+          )
+            return "Outdoor";
+          if (s.includes("camera") || s.includes("cctv")) return "Security";
+          return "Sensors";
+        }
+
+        const ONLINE_WORDS = [
+          "on",
+          "online",
+          "active",
+          "running",
+          "locked",
+          "occupied",
+          "detected",
+        ];
+        function isUp(status) {
+          if (!status) return false;
+          return ONLINE_WORDS.includes(String(status).toLowerCase());
+        }
+
+        function timeAgo(ts) {
+          if (!ts) return "—";
+          let n = Number(ts);
+          if (!n) return String(ts);
+          if (n < 1e12) n = n * 1000; // seconds -> ms guard, harmless if already ms-scale
+          const diff = Date.now() - n;
+          if (diff < 0) return new Date(n).toLocaleString();
+          const s = Math.floor(diff / 1000);
+          if (s < 60) return s + "s ago";
+          const m = Math.floor(s / 60);
+          if (m < 60) return m + "m ago";
+          const h = Math.floor(m / 60);
+          if (h < 24) return h + "h ago";
+          const d = Math.floor(h / 24);
+          return d + "d ago";
+        }
+
+        function prettyKey(k) {
+          return k
+            .replace(/_/g, " ")
+            .replace(/([a-z])([A-Z])/g, "$1 $2")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+        }
+
+        /* ---------------- API ---------------- */
+        async function apiFetch(path, options = {}) {
+          if (!state.baseUrl) throw new Error("No base URL configured.");
+          const url = state.baseUrl.replace(/\/$/, "") + path;
+          let res;
+          try {
+            res = await fetch(url, {
+              method: options.method || "GET",
+              headers: Object.assign(
+                {
+                  Authorization: state.token,
+                  "Content-Type": "application/json",
+                },
+                options.headers || {},
+              ),
+              body: options.body ? JSON.stringify(options.body) : undefined,
+            });
+          } catch (networkErr) {
+            throw new Error(
+              "Network/CORS error reaching the API. If this API Gateway does not allow requests from this page's origin, enable CORS on it, or open this file directly in a browser instead of a sandboxed preview.",
+            );
+          }
+          let data;
+          try {
+            data = await res.json();
+          } catch (e) {
+            data = null;
+          }
+          if (!res.ok) {
+            const msg =
+              (data && (data.error || data.message)) || "HTTP " + res.status;
+            throw new Error(msg);
+          }
+          return data;
+        }
+
+        /* ---------------- connection ---------------- */
+        $("#connectBtn").addEventListener("click", connect);
+        $("#baseUrl").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") connect();
+        });
+        $("#token").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") connect();
+        });
+
+        async function connect() {
+          state.baseUrl = $("#baseUrl").value.trim();
+          state.token = $("#token").value.trim();
+          storage.set("fc_baseUrl", state.baseUrl);
+          storage.set("fc_token", state.token);
+
+          setConnStatus("connecting");
+          const btn = $("#connectBtn");
+          btn.disabled = true;
+          btn.textContent = "Connecting...";
+          try {
+            const data = await apiFetch("");
+            state.devices = (data && data.devices) || [];
+            state.connected = true;
+            setConnStatus("connected");
+            renderDeviceList();
+          } catch (err) {
+            state.connected = false;
+            setConnStatus("error", err.message);
+            $("#deviceList").innerHTML = "";
+            $("#deviceList").appendChild(
+              el("div", "empty-state", escapeHtml(err.message)),
+            );
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Connect";
+          }
+        }
+
+        function setConnStatus(kind, msg) {
+          const pill = $("#connStatus");
+          if (kind === "connected") {
+            pill.innerHTML =
+              '<span class="dot on"></span><span>Connected · ' +
+              state.devices.length +
+              " devices</span>";
+          } else if (kind === "connecting") {
+            pill.innerHTML =
+              '<span class="spinner"></span><span>Connecting...</span>';
+          } else if (kind === "error") {
+            pill.innerHTML =
+              '<span class="dot off"></span><span>' +
+              escapeHtml(msg || "Connection failed") +
+              "</span>";
+          } else {
+            pill.innerHTML =
+              '<span class="dot off"></span><span>Not connected</span>';
+          }
+        }
+
+        function escapeHtml(str) {
+          return String(str).replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+        }
+
+        /* ---------------- device list ---------------- */
+        $("#searchInput").addEventListener("input", renderDeviceList);
+
+        function renderDeviceList() {
+          const listEl = $("#deviceList");
+          listEl.innerHTML = "";
+          $("#deviceCount").textContent = state.devices.length;
+
+          const q = $("#searchInput").value.trim().toLowerCase();
+          const filtered = state.devices.filter((d) =>
+            d.deviceId.toLowerCase().includes(q),
+          );
+
+          if (filtered.length === 0) {
+            listEl.appendChild(
+              el(
+                "div",
+                "empty-state",
+                state.devices.length
+                  ? "No devices match your filter."
+                  : "No devices found.",
+              ),
+            );
+            return;
+          }
+
+          const groups = {};
+          filtered.forEach((d) => {
+            const cat = categoryFor(d.deviceId);
+            (groups[cat] = groups[cat] || []).push(d);
+          });
+
+          const order = [
+            "Home",
+            "Industrial",
+            "Outdoor",
+            "Security",
+            "Sensors",
+          ];
+          order.forEach((cat) => {
+            if (!groups[cat]) return;
+            const catWrap = el("div", "category");
+            catWrap.appendChild(el("div", "category-title", cat));
+            groups[cat].forEach((d) => {
+              const up = isUp(d.status);
+              const card = el(
+                "div",
+                "device-card" +
+                  (d.deviceId === state.selectedId ? " active" : ""),
+              );
+              card.innerHTML =
+                '<div class="icon">' +
+                iconFor(d.deviceId) +
+                "</div>" +
+                '<div class="meta">' +
+                '<div class="id">' +
+                escapeHtml(d.deviceId) +
+                "</div>" +
+                '<div class="status-line"><span class="dot ' +
+                (up ? "on" : "off") +
+                '"></span><span>' +
+                escapeHtml(d.status || "unknown") +
+                "</span></div>" +
+                "</div>";
+              card.addEventListener("click", () => selectDevice(d.deviceId));
+              catWrap.appendChild(card);
+            });
+            listEl.appendChild(catWrap);
+          });
+        }
+
+        /* ---------------- device detail ---------------- */
+        async function selectDevice(id) {
+          state.selectedId = id;
+          state.tab = "overview";
+          state.latest = null;
+          state.recent = null;
+          state.shadow = null;
+          renderDeviceList();
+          renderContent({ loading: true });
+          try {
+            const latest = await apiFetch(
+              "/" + encodeURIComponent(id) + "/latest",
+            );
+            state.latest = latest;
+          } catch (e) {
+            state.latestErr = e.message;
+          }
+          renderContent();
+        }
+
+        function setTab(tab) {
+          state.tab = tab;
+          renderContent();
+          if (tab === "history" && !state.recent && !state.recentErr)
+            loadRecent();
+          if (tab === "shadow" && !state.shadow && !state.shadowErr)
+            loadShadow();
+        }
+
+        async function loadRecent() {
+          try {
+            const data = await apiFetch(
+              "/" + encodeURIComponent(state.selectedId) + "/recent",
+            );
+            let arr = data;
+            if (data && data.readings) arr = data.readings;
+            if (!Array.isArray(arr)) arr = [data];
+            state.recent = arr;
+          } catch (e) {
+            state.recentErr = e.message;
+          }
+          renderContent();
+        }
+
+        async function loadShadow() {
+          try {
+            state.shadow = await apiFetch(
+              "/" + encodeURIComponent(state.selectedId) + "/shadow",
+            );
+          } catch (e) {
+            state.shadowErr = e.message;
+          }
+          renderContent();
+        }
+
+        async function submitShadow(text) {
+          let parsed;
+          try {
+            parsed = JSON.parse(text);
+          } catch (e) {
+            $("#shadowMsg").textContent = "Invalid JSON — check your syntax.";
+            $("#shadowMsg").className = "inline-msg err";
+            return;
+          }
+          $("#shadowMsg").textContent = "Sending...";
+          $("#shadowMsg").className = "inline-msg";
+          try {
+            const res = await apiFetch(
+              "/" + encodeURIComponent(state.selectedId) + "/shadow",
+              { method: "POST", body: parsed },
+            );
+            $("#shadowMsg").textContent = res.message || "Shadow updated.";
+            $("#shadowMsg").className = "inline-msg ok";
+            loadShadow();
+          } catch (e) {
+            $("#shadowMsg").textContent = e.message;
+            $("#shadowMsg").className = "inline-msg err";
+          }
+        }
+
+        function quickPower(power) {
+          submitShadow(JSON.stringify({ desired: { power } }));
+        }
+
+        function renderContent(opts) {
+          const wrap = $("#contentInner");
+          opts = opts || {};
+          if (!state.selectedId) {
+            wrap.innerHTML = "";
+            wrap.appendChild(
+              el(
+                "div",
+                "placeholder",
+                '<div class="big">No device selected</div><div>Pick a device from the list on the left.</div>',
+              ),
+            );
+            return;
+          }
+          if (opts.loading) {
+            wrap.innerHTML = "";
+            wrap.appendChild(
+              el("div", "placeholder", '<span class="spinner"></span>'),
+            );
+            return;
+          }
+
+          const id = state.selectedId;
+          const status = state.latest ? state.latest.status : null;
+          const up = isUp(status);
+
+          wrap.innerHTML = "";
+
+          const header = el("div", "device-header");
+          header.innerHTML =
+            '<div class="device-title"><span class="cat">' +
+            escapeHtml(categoryFor(id)) +
+            "</span>" +
+            escapeHtml(id) +
+            "</div>" +
+            '<div class="header-status"><span class="status-badge ' +
+            (up ? "up" : "down") +
+            '">' +
+            '<span class="dot ' +
+            (up ? "on" : "off") +
+            '"></span>' +
+            escapeHtml(status || "unknown") +
+            "</span></div>";
+          wrap.appendChild(header);
+
+          const tabs = el("div", "tabs");
+          [
+            ["overview", "Overview"],
+            ["history", "History"],
+            ["shadow", "Shadow"],
+          ].forEach(([key, label]) => {
+            const t = el(
+              "button",
+              "tab" + (state.tab === key ? " active" : ""),
+              label,
+            );
+            t.addEventListener("click", () => setTab(key));
+            tabs.appendChild(t);
+          });
+          wrap.appendChild(tabs);
+
+          if (state.latestErr && !state.latest) {
+            wrap.appendChild(
+              el("div", "banner err", escapeHtml(state.latestErr)),
+            );
+          }
+
+          if (state.tab === "overview") renderOverview(wrap);
+          if (state.tab === "history") renderHistory(wrap);
+          if (state.tab === "shadow") renderShadow(wrap);
+        }
+
+        function renderOverview(wrap) {
+          if (!state.latest) {
+            wrap.appendChild(
+              el(
+                "div",
+                "banner info",
+                "No telemetry available for this device yet.",
+              ),
+            );
+            return;
+          }
+          const cards = el("div", "grid-cards");
+          Object.keys(state.latest).forEach((k) => {
+            if (["deviceId"].includes(k)) return;
+            let v = state.latest[k];
+            let display = v;
+            const isTimeKey = /timestamp|lastUpdated/i.test(k);
+            if (isTimeKey) display = timeAgo(v);
+            else if (typeof v === "number") display = v;
+            else display = String(v);
+            const card = el("div", "metric-card");
+            card.innerHTML =
+              '<div class="k">' +
+              escapeHtml(prettyKey(k)) +
+              '</div><div class="v' +
+              (isTimeKey ? "" : " amber") +
+              '">' +
+              escapeHtml(String(display)) +
+              "</div>";
+            cards.appendChild(card);
+          });
+          wrap.appendChild(cards);
+        }
+
+        function renderHistory(wrap) {
+          if (state.recentErr) {
+            wrap.appendChild(
+              el("div", "banner err", escapeHtml(state.recentErr)),
+            );
+            return;
+          }
+          if (!state.recent) {
+            wrap.appendChild(
+              el("div", "placeholder", '<span class="spinner"></span>'),
+            );
+            return;
+          }
+          const rows = state.recent;
+          if (!rows.length) {
+            wrap.appendChild(
+              el("div", "banner info", "No recent readings for this device."),
+            );
+            return;
+          }
+
+          // sparkline for first numeric non-timestamp field found
+          const sample = rows[0];
+          const numericKey = Object.keys(sample).find(
+            (k) =>
+              typeof sample[k] === "number" &&
+              !/timestamp|lastUpdated|uptime/i.test(k),
+          );
+          if (numericKey) {
+            const vals = rows
+              .map((r) => Number(r[numericKey]))
+              .filter((v) => !isNaN(v))
+              .reverse();
+            if (vals.length > 1) {
+              wrap.appendChild(
+                el("div", "section-title", prettyKey(numericKey) + " trend"),
+              );
+              const sw = el("div", "sparkline-wrap");
+              sw.innerHTML =
+                '<div class="k">' +
+                vals.length +
+                " readings, oldest → newest</div>" +
+                sparklineSvg(vals);
+              wrap.appendChild(sw);
+            }
+          }
+
+          wrap.appendChild(el("div", "section-title", "Recent readings"));
+          const allKeys = new Set();
+          rows.forEach((r) => Object.keys(r).forEach((k) => allKeys.add(k)));
+          const keys = Array.from(allKeys).sort((a, b) => {
+            if (a === "timestamp") return -1;
+            if (b === "timestamp") return 1;
+            return 0;
+          });
+
+          const table = el("table", "data-table");
+          const thead = el(
+            "thead",
+            "",
+            "<tr>" +
+              keys
+                .map((k) => "<th>" + escapeHtml(prettyKey(k)) + "</th>")
+                .join("") +
+              "</tr>",
+          );
+          table.appendChild(thead);
+          const tbody = el("tbody");
+          rows.forEach((r) => {
+            const tr = el("tr");
+            tr.innerHTML = keys
+              .map((k) => {
+                let v = r[k];
+                if (v === undefined) return "<td>—</td>";
+                if (/timestamp|lastUpdated/i.test(k))
+                  return "<td>" + escapeHtml(timeAgo(v)) + "</td>";
+                return "<td>" + escapeHtml(String(v)) + "</td>";
+              })
+              .join("");
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          wrap.appendChild(table);
+        }
+
+        function sparklineSvg(vals) {
+          const w = 560,
+            h = 60,
+            pad = 6;
+          const min = Math.min(...vals),
+            max = Math.max(...vals);
+          const range = max - min || 1;
+          const step = (w - pad * 2) / (vals.length - 1);
+          const pts = vals
+            .map((v, i) => {
+              const x = pad + i * step;
+              const y = h - pad - ((v - min) / range) * (h - pad * 2);
+              return x.toFixed(1) + "," + y.toFixed(1);
+            })
+            .join(" ");
+          return (
+            '<svg viewBox="0 0 ' +
+            w +
+            " " +
+            h +
+            '" width="100%" height="' +
+            h +
+            '" preserveAspectRatio="none">' +
+            '<polyline points="' +
+            pts +
+            '" fill="none" stroke="#FFB020" stroke-width="1.6" />' +
+            "</svg>"
+          );
+        }
+
+        function renderShadow(wrap) {
+          if (state.shadowErr) {
+            wrap.appendChild(
+              el("div", "banner err", escapeHtml(state.shadowErr)),
+            );
+          }
+          if (!state.shadow) {
+            wrap.appendChild(
+              el("div", "placeholder", '<span class="spinner"></span>'),
+            );
+            return;
+          }
+          const s = state.shadow;
+          wrap.appendChild(el("div", "section-title", "Current state"));
+          const box = el("div", "shadow-box");
+          box.innerHTML =
+            "<pre>" +
+            escapeHtml(JSON.stringify(s.state || s, null, 2)) +
+            "</pre>";
+          wrap.appendChild(box);
+
+          wrap.appendChild(el("div", "section-title", "Quick controls"));
+          const qc = el("div", "quick-controls");
+          const onBtn = el("button", "btn primary", "Power on");
+          onBtn.addEventListener("click", () => quickPower("on"));
+          const offBtn = el("button", "btn", "Power off");
+          offBtn.addEventListener("click", () => quickPower("off"));
+          qc.appendChild(onBtn);
+          qc.appendChild(offBtn);
+          wrap.appendChild(qc);
+
+          wrap.appendChild(el("div", "section-title", "Raw desired state"));
+          const editorWrap = el("div", "shadow-editor");
+          const ta = el("textarea");
+          ta.value = JSON.stringify(
+            { desired: (s.state && s.state.desired) || {} },
+            null,
+            2,
+          );
+          editorWrap.appendChild(ta);
+          const actions = el("div", "shadow-actions");
+          const sendBtn = el("button", "btn primary", "Update shadow");
+          sendBtn.addEventListener("click", () => submitShadow(ta.value));
+          const msg = el("span", "inline-msg");
+          msg.id = "shadowMsg";
+          actions.appendChild(sendBtn);
+          actions.appendChild(msg);
+          editorWrap.appendChild(actions);
+          wrap.appendChild(editorWrap);
+        }
+
+        /* ---------------- AI console ---------------- */
+        $("#modeQueryBtn").addEventListener("click", () => setMode("query"));
+        $("#modeControlBtn").addEventListener("click", () =>
+          setMode("control"),
+        );
+        $("#collapseBtn").addEventListener("click", toggleConsole);
+        $("#consoleInput").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") sendConsoleCommand();
+        });
+
+        function setMode(mode) {
+          state.aiMode = mode;
+          $("#modeQueryBtn").classList.toggle("active", mode === "query");
+          $("#modeControlBtn").classList.toggle("active", mode === "control");
+          $("#consoleInput").placeholder =
+            mode === "query"
+              ? 'Ask about a device, e.g. "show me latest data from esp32_01"...'
+              : 'Command a device, e.g. "turn on smart_light_bedroom"...';
+        }
+
+        function toggleConsole() {
+          state.consoleCollapsed = !state.consoleCollapsed;
+          $("#console").classList.toggle("collapsed", state.consoleCollapsed);
+          $("#collapseBtn").innerHTML = state.consoleCollapsed
+            ? "&#9652;"
+            : "&#9662;";
+        }
+
+        async function sendConsoleCommand() {
+          const input = $("#consoleInput");
+          const prompt = input.value.trim();
+          if (!prompt) return;
+          input.value = "";
+          const log = $("#consoleLog");
+          const emptyMsg = log.querySelector(".log-empty");
+          if (emptyMsg) emptyMsg.remove();
+
+          const entry = el("div", "log-entry");
+          entry.innerHTML =
+            '<div class="prompt-line"><span class="arrow">&gt;</span>' +
+            escapeHtml(prompt) +
+            "</div>" +
+            '<div class="reply-line"><span class="spinner"></span></div>';
+          log.appendChild(entry);
+          log.scrollTop = log.scrollHeight;
+
+          const path = state.aiMode === "query" ? "/ai/query" : "/ai/control";
+          const replyLine = entry.querySelector(".reply-line");
+          try {
+            const res = await apiFetch(path, {
+              method: "POST",
+              body: { prompt },
+            });
+            replyLine.innerHTML =
+              '<span class="arrow">&gt;</span>' +
+              escapeHtml(res.answer || res.error || JSON.stringify(res));
+            if (res.error) replyLine.classList.add("err");
+            // if a device was touched, refresh it
+            if (res.deviceId && res.deviceId === state.selectedId) {
+              selectDevice(state.selectedId);
+            }
+          } catch (e) {
+            replyLine.innerHTML =
+              '<span class="arrow">&gt;</span>' + escapeHtml(e.message);
+            replyLine.classList.add("err");
+          }
+          log.scrollTop = log.scrollHeight;
+        }
+
+        /* ---------------- boot ---------------- */
+        if (state.baseUrl && state.token) {
+          connect();
+        }
+      })();
+    </script>
+  </body>
+</html>

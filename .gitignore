@@ -1,0 +1,17 @@
+config.local.json
+.env
+*.pem
+
+# Python (if backend Lambda code / test scripts live in this repo)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# Live Server
+.vscode/.live-server*
